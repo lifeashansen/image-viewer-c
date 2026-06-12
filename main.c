@@ -20,21 +20,19 @@ int main(int argc, const char *argv[])
   }
 
   const char *imagepath = argv[1];
-
   FILE *image = fopen(imagepath, "rb");
 
   if (image == NULL)
   {
     printf("Failed to open image");
-
     return EXIT_FAILURE;
   }
 
   // TODO: Learn how to handle used before initialization
   //
-  const char *windowtitle = "Image Viewer";
-  int windowwidth = -1;
-  int windowheight = -1;
+  const char *pwindow_title = "Image Viewer";
+  int window_width = 0;
+  int window_height = 0;
   // int image_maximumcolorvalue = -1;
 
   // Read the header
@@ -46,7 +44,7 @@ int main(int argc, const char *argv[])
 
   // Get the image's dimensions
   fgets(tempheaderbuf, 50, image);
-  sscanf(tempheaderbuf, "%d %d\n", &windowwidth, &windowheight);
+  sscanf(tempheaderbuf, "%d %d\n", &window_width, &window_height);
 
   // Get maximum color value
   fgets(tempheaderbuf, 50, image);
@@ -55,17 +53,17 @@ int main(int argc, const char *argv[])
 
   free(tempheaderbuf);
 
-  SDL_Window *pwindow =
-      SDL_CreateWindow(windowtitle, windowwidth, windowheight, 0);
+  SDL_Window *p_window =
+      SDL_CreateWindow(pwindow_title, window_width, window_height, 0);
 
-  SDL_Surface *psurface = SDL_GetWindowSurface(pwindow);
+  SDL_Surface *p_surface = SDL_GetWindowSurface(p_window);
 
   unsigned char r, g, b;
   r = g = b = 0;
 
-  for (int y = 0; y < windowheight; y++)
+  for (int y = 0; y < window_height; y++)
   {
-    for (int x = 0; x < windowwidth; x++)
+    for (int x = 0; x < window_width; x++)
     {
 
       r = fgetc(image);
@@ -74,31 +72,31 @@ int main(int argc, const char *argv[])
 
       const SDL_Rect rect = (SDL_Rect){x, y, 1, 1};
 
-      Uint32 color = SDL_MapRGB(SDL_GetPixelFormatDetails(psurface->format),
+      Uint32 color = SDL_MapRGB(SDL_GetPixelFormatDetails(p_surface->format),
                                 NULL, r, g, b);
 
-      SDL_FillSurfaceRect(psurface, &rect, color);
+      SDL_FillSurfaceRect(p_surface, &rect, color);
     }
   }
 
-  SDL_UpdateWindowSurface(pwindow);
+  SDL_UpdateWindowSurface(p_window);
 
-  Uint8 windowshouldclose = 0;
-
-  while (!windowshouldclose)
+  while (true)
   {
-    SDL_Event pevent;
-    while (SDL_PollEvent(&pevent))
+
+    SDL_Event event;
+
+    while (SDL_WaitEvent(&event))
     {
-      if (pevent.type == SDL_EVENT_QUIT)
+      if (event.type == SDL_EVENT_QUIT)
       {
-        windowshouldclose = 1;
+        SDL_DestroyWindow(p_window);
+        SDL_Quit();
+
+        exit(0);
       }
     }
   }
-
-  SDL_DestroyWindow(pwindow);
-  SDL_Quit();
 
   return 0;
 }
